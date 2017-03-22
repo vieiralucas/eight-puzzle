@@ -7,6 +7,7 @@ import Matrix exposing (Matrix)
 import Maybe.Extra
 import Time exposing (Time)
 import Board exposing (Board, Cell)
+import Search
 
 
 -- MODEL
@@ -29,7 +30,7 @@ initial =
                 ]
 
         steps =
-            [ Matrix.loc 2 1, Matrix.loc 1 1, Matrix.loc 1 2 ]
+            Search.aStar board
     in
         ( { board = board, steps = steps }, Cmd.none )
 
@@ -73,7 +74,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Time.every ( 600 * Time.millisecond ) Step
+    Time.every (600 * Time.millisecond) Step
 
 
 
