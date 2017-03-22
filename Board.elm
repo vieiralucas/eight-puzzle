@@ -33,6 +33,14 @@ neighbours cell board =
         Maybe.Extra.values [ top, bot, left, right ]
 
 
+set : Cell -> Maybe Int -> Board -> Board
+set cell newV board =
+    Matrix.set
+        (Matrix.loc cell.y cell.x)
+        { cell | v = newV }
+        board
+
+
 move : Cell -> Board -> Board
 move cell board =
     let
@@ -51,5 +59,5 @@ move cell board =
 
             blank :: _ ->
                 board
-                    |> Matrix.set (Matrix.loc blank.y blank.x) { blank | v = cell.v }
-                    |> Matrix.set (Matrix.loc cell.y cell.x) { cell | v = Nothing }
+                    |> set blank cell.v
+                    |> set cell Nothing
