@@ -5,6 +5,7 @@ import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
 import Matrix exposing (Matrix)
 import Maybe.Extra
+import Time exposing (Time)
 import Board exposing (Board, Cell)
 
 
@@ -13,6 +14,7 @@ import Board exposing (Board, Cell)
 
 type alias Model =
     { board : Board
+    , steps : List Matrix.Location
     }
 
 
@@ -25,8 +27,11 @@ initial =
                 , [ Cell 0 1 (Just 5), Cell 1 1 (Just 4), Cell 2 1 (Just 3) ]
                 , [ Cell 0 2 (Just 2), Cell 1 2 (Just 1), Cell 2 2 Nothing ]
                 ]
+
+        steps =
+            [ Matrix.loc 2 1, Matrix.loc 1 1, Matrix.loc 1 2 ]
     in
-        ( { board = board }, Cmd.none )
+        ( { board = board, steps = steps }, Cmd.none )
 
 
 
@@ -35,6 +40,7 @@ initial =
 
 type Msg
     = Move Cell
+    | Step Time
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -44,6 +50,30 @@ update msg model =
             ( { model | board = Board.move cell model.board }
             , Cmd.none
             )
+
+        Step t ->
+            case model.steps of
+                [] ->
+                    ( model, Cmd.none )
+
+                step :: tail ->
+                    let
+                        newBoard =
+                            Board.step step model.board
+
+                        newModel =
+                            { model | steps = tail, board = newBoard }
+                    in
+                        ( newModel, Cmd.none )
+
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Time.every ( 600 * Time.millisecond ) Step
 
 
 
@@ -121,7 +151,7 @@ view model =
 main =
     Html.program
         { init = initial
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subscriptions
         , update = update
         , view = view
         }

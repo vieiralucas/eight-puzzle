@@ -1,4 +1,4 @@
-module Board exposing (Board, Cell, move)
+module Board exposing (Board, Cell, move, step)
 
 import Matrix exposing (Matrix)
 import Maybe.Extra
@@ -61,3 +61,17 @@ move cell board =
                 board
                     |> set blank cell.v
                     |> set cell Nothing
+
+
+step : Matrix.Location -> Board -> Board
+step location board =
+    let
+        maybeCell =
+            Matrix.get location board
+    in
+        case maybeCell of
+            Nothing ->
+                board
+
+            Just cell ->
+                move cell board
