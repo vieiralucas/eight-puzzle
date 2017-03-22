@@ -1,7 +1,7 @@
 {
     "version": "0.0.0",
     "summary": "The 8 puzzle game with an A.I.",
-    "repository": "https://github.com/vieiralucas/8puzzle.git",
+    "repository": "https://github.com/vieiralucas/eight-puzzle.git",
     "license": "BSD3",
     "source-directories": [
         "."
@@ -9,6 +9,7 @@
     "exposed-modules": [],
     "dependencies": {
         "chendrix/elm-matrix": "3.1.2 <= v < 4.0.0",
+        "elm-community/maybe-extra": "4.0.0 <= v < 5.0.0",
         "elm-lang/core": "5.1.1 <= v < 6.0.0",
         "elm-lang/html": "2.0.0 <= v < 3.0.0"
     },
