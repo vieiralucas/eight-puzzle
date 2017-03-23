@@ -1,77 +1,99 @@
-module Board exposing (Board, Cell, move, step)
+module Board exposing (Board, Cell(..), Position, move, get)
 
-import Matrix exposing (Matrix)
-import Maybe.Extra
+import Dict exposing (Dict)
+import Maybe.Extra as Maybe
+import List.Extra as List
 
 
-type alias Cell =
-    { x : Int
-    , y : Int
-    , v : Maybe Int
-    }
+type Cell
+    = OccupiedCell Int
+    | EmptyCell
+
+
+type alias Position =
+    ( Int, Int )
 
 
 type alias Board =
-    Matrix Cell
+    Dict Position Cell
 
 
-neighbours : Cell -> Board -> List Cell
-neighbours cell board =
+neighbours : Position -> Board -> List ( Position, Cell )
+neighbours ( x, y ) board =
     let
+        leftPos =
+            ( x - 1, y )
+
         left =
-            Matrix.get (Matrix.loc cell.y (cell.x - 1)) board
+            ( leftPos, Dict.get leftPos board )
+
+        rightPos =
+            ( x + 1, y )
 
         right =
-            Matrix.get (Matrix.loc cell.y (cell.x + 1)) board
+            ( rightPos, Dict.get rightPos board )
+
+        topPos =
+            ( x, y - 1 )
 
         top =
-            Matrix.get (Matrix.loc (cell.y - 1) cell.x) board
+            ( topPos, Dict.get topPos board )
+
+        botPos =
+            ( x, y + 1 )
 
         bot =
-            Matrix.get (Matrix.loc (cell.y + 1) cell.x) board
+            ( botPos, Dict.get botPos board )
     in
-        Maybe.Extra.values [ top, bot, left, right ]
+        [ top, bot, left, right ]
+            |> List.map
+                (\( pos, cell ) ->
+                    case cell of
+                        Just c ->
+                            Just ( pos, c )
+
+                        Nothing ->
+                            Nothing
+                )
+            |> Maybe.values
 
 
-set : Cell -> Maybe Int -> Board -> Board
-set cell newV board =
-    Matrix.set
-        (Matrix.loc cell.y cell.x)
-        { cell | v = newV }
+set : Position -> Cell -> Board -> Board
+set position cell board =
+    Dict.insert
+        position
+        cell
         board
 
 
-move : Cell -> Board -> Board
-move cell board =
-    let
-        n =
-            neighbours cell board
-
-        isBlank c =
-            Maybe.Extra.isNothing c.v
-
-        blank =
-            List.filter isBlank n
-    in
-        case blank of
-            [] ->
-                board
-
-            blank :: _ ->
-                board
-                    |> set blank cell.v
-                    |> set cell Nothing
-
-
-step : Matrix.Location -> Board -> Board
-step location board =
+move : Position -> Board -> Board
+move position board =
     let
         maybeCell =
-            Matrix.get location board
+            Dict.get position board
     in
         case maybeCell of
             Nothing ->
                 board
 
             Just cell ->
-                move cell board
+                let
+                    n =
+                        neighbours position board
+
+                    blank =
+                        List.find (\( pos, cell ) -> cell == EmptyCell) n
+                in
+                    case blank of
+                        Nothing ->
+                            board
+
+                        Just ( pos, blankCell ) ->
+                            board
+                                |> set pos cell
+                                |> set position EmptyCell
+
+
+get : Board -> Int -> Int -> Maybe Cell
+get board x y =
+    Dict.get ( x, y ) board
