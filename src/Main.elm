@@ -6,7 +6,7 @@ import Html.Events exposing (onClick)
 import Matrix exposing (Matrix)
 import Maybe.Extra
 import Time exposing (Time)
-import Board exposing (Board, Cell)
+import Board exposing (Board, Cell, Position)
 import Search
 
 
@@ -22,12 +22,18 @@ type alias Model =
 initial : ( Model, Cmd Msg )
 initial =
     let
-        board =
+        matrix =
             Matrix.fromList
-                [ [ Cell 0 0 (Just 8), Cell 1 0 (Just 7), Cell 2 0 (Just 6) ]
-                , [ Cell 0 1 (Just 5), Cell 1 1 (Just 4), Cell 2 1 (Just 3) ]
-                , [ Cell 0 2 (Just 2), Cell 1 2 (Just 1), Cell 2 2 Nothing ]
+                [ [ Cell (Position 0 0) 8, Cell (Position 1 0) 7, Cell (Position 2 0) 6 ]
+                , [ Cell (Position 0 1) 5, Cell (Position 1 1) 4, Cell (Position 2 1) 3 ]
+                , [ Cell (Position 0 2) 2, Cell (Position 1 2) 1, Cell (Position 2 2) 0 ]
                 ]
+
+        blank =
+            Position 2 2
+
+        board =
+            { matrix = matrix, blank = blank }
 
         steps =
             Search.aStar board
@@ -108,16 +114,14 @@ emptyStyle =
 
 viewCell : Cell -> Html Msg
 viewCell cell =
-    case cell.v of
-        Just v ->
-            Html.div
-                [ style cellStyle
-                , onClick (Move cell)
-                ]
-                [ (viewValue v) ]
-
-        Nothing ->
-            Html.div [ style emptyStyle ] []
+    if cell.v == 0 then
+        Html.div [ style emptyStyle ] []
+    else
+        Html.div
+            [ style cellStyle
+            , onClick (Move cell)
+            ]
+            [ (viewValue cell.v) ]
 
 
 viewRow : List Cell -> List (Html Msg)
@@ -141,7 +145,7 @@ view : Model -> Html Msg
 view model =
     let
         rows =
-            model.board
+            model.board.matrix
                 |> mapRows viewRow
                 |> List.map (Html.div [ style rowStyle ])
     in
